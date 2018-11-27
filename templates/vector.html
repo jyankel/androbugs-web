@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}AndroBugs Web{% endblock %}
+
+{% block content %}
+      <table id="apk" class="table table-bordered">
+          <thead class="thead-dark">
+          <tr>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">MD5</th>
+              <th scope="col">Comment</th>
+              <th scope="col">Details</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for apk in apks %}
+          <tr>
+          {% if apk.details | vector_in_apk(vector_name) %}
+
+          <td><a href="{{ url_for('detail', name=apk.package_name)}}">Detail</a></td>
+          <td>{{ apk.package_name }}</td>
+          <td>{{ apk.file_md5 }}</td>
+          <td>{{ apk.comment }}</td>
+            <table class="table table-hover">
+                <tr><td><b>{{ vector_name }}</b></td></tr>
+                <tr><td>{{ apk.details[vector_name]['summary'] }}</td></tr>
+                <tr><td>{{ apk.details[vector_name]['level'] }}</td></tr>
+            </table>
+          </td>
+          {% endif %}
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+{% block scripts %}
+{{ super() }}
+<script>
+    jQuery(document).ready(function($) {
+        $('.click').click(function() {
+            window.location = $(this).data("href");
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

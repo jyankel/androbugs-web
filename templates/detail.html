@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}AndroBugs Web{% endblock %}
+{% block content %}
+  <h1>{{ package_name }}</h1>
+  <table id="apk" class="table table-bordered">
+      <thead class="thead-dark">
+      <tr>
+          <th scope="col">Key</th>
+          <th scope="col">Value</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for apk in apks %}
+      <tr><td>Package Name</td><td>{{ apk.package_name }}</td></tr>
+      <tr><td>MD5</td><td>{{ apk.file_md5 }}</td></tr>
+      <tr><td>Comment</td><td>{{ apk.comment }}</td></tr>
+      <tr><td>APK Filepath</td><td>{{ apk.apk_filepath_absolute }}</td></tr>
+      <tr><td>Platform</td><td>{{ apk.platform }}</td></tr>
+      <tr><td>Target SDK</td><td>{{ apk.targetSdk }}</td></tr>
+      {% for key, value in apk.details.items() %}
+        {% if value['count'] > 0 %}
+          <tr>
+              <td>{{ key }}</td>
+              <td>
+                  <p><b>Summary: </b>{{ value['summary'] }}</p>
+                  <p><b>Count: </b>{{ value['count'] }}</p>
+                  {% if value['level'] == 'Critical' %}
+                  <div class="alert alert-danger"><p><b>Level: </b>{{ value['level'] }}</p></div>
+                  {% else %}
+                  <p><b>Level: </b>{{ value['level'] }}</b></p>
+                  {% endif %}
+                  <p><b>Title: </b>{{ value['title'] }}</p>
+                  {% if value['vector_details'] %}
+                  {% autoescape false %}
+                  <p><b>Details: </b>{{ value['vector_details'] | replace("\n", "<br/>") }}</p>
+                  {% endautoescape %}
+                  {% endif %}
+              </td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+      <tr class="info"><td colspan="2"></td></tr>
+      {% endfor %}
+      </tbody>
+  </table>
+{% block scripts %}
+{{ super() }}
+<script>
+    jQuery(document).ready(function($) {
+        $('.click').click(function() {
+            window.location = $(this).data("href");
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

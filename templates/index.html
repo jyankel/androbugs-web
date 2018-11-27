@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}AndroBugs Web{% endblock %}
+
+{% block content %}
+      <table id="apk" class="table table-bordered table-hover table-striped">
+          <thead class="thead-dark">
+          <tr>
+              <th scope="col"><icon class="glyphicon glyphicon-trash"/></th>
+              <th scope="col">Name</th>
+              <th scope="col">MD5</th>
+              <th scope="col">Comment</th>
+              <th scope="col">Critical Warnings</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for apk in apks %}
+          <tr>
+          <td>
+              <a href="#" onclick="event.preventDefault(); document.getElementById('delete-form-{{ apk.id }}').submit();">
+                  <i class="glyphicon glyphicon-trash"></i>
+              </a>
+              <form action="{{ url_for('delete', id=apk.id) }}" method="POST" id="delete-form-{{ apk.id }}" style="display: none;"></form>
+          </td>
+              <td><a href="{{ url_for('detail', name=apk.package_name)}}"><icon class="glyphicon glyphicon-info-sign"/>{{ apk.package_name }}</a></td>
+          <td>{{ apk.file_md5 }}</td>
+              <td>
+                  <form method="post" enctype="multipart/form-data">
+                      <textarea name="comment" id="{{ apk.id }}" class="form-control comment" rows="3" cols="60"
+                       placeholder="Enter comment">{{ apk.comment or "" }}</textarea>
+                      <button type="submit" class="btn btn-default">Submit</button>
+                  </form>
+              </td>
+              <td>
+          {% for key, value in apk.details.items() %}
+            {% if value['count'] > 0 %}
+              {% if value['level'] == 'Critical' %}
+                  <div class=alert-danger><a href="{{ url_for('vector', vector_title=key)}}">{{key}}</a></div>
+              {% else %}
+                  <div></div>
+              {% endif %}
+                <!--<table class="table table-hover">-->
+                    <!--<a href="{{ url_for('vector', vector_title=key)}}">{{key}}</a>-->
+                    <!--<tr><td>{{value['summary']}}</td></tr>-->
+                    <!--<tr><td>{{value['level']}}</td></tr>-->
+                <!--</table>-->
+
+              {% endif %}
+          {% endfor %}
+
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+{% block scripts %}
+{{ super() }}
+<script>
+    
+    $(document).ready(function($) {
+        let table;
+        if($('[id^=apk_wrapper]').length == 0) {
+            table = $('#apk').DataTable({
+                "columns": [
+                    { "orderable": false },
+                    null,
+                    null,
+                    null,
+                    { "orderable": false }
+                ]
+            });
+        }
+
+        /*$('#apk tbody').on('click', 'tr', function (evt) {
+            if($(evt.target).is("textarea") || $(evt.target).is("button")) {
+            // Disable click if editing the comment
+                return;
+            }
+            let data = table.row($(this)).data();
+            console.log(data);
+            document.location.href = '/detail/' + data[1];
+        } ); */
+
+        // Handle comment update
+        $("form").submit(function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let id = e.target[0].getAttribute('id');
+            let url = "/update";
+            $(this).append('<input type="hidden" name="id" value="' + id + '" /> ');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: form.serialize(),
+                success: function(data)
+                {
+                    console.log("Success" + data);
+                },
+                error: function(data)
+                {
+                    console.log(data);
+                }
+            });
+
+
+            return false;
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}
