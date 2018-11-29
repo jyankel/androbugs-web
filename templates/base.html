@@ -28,8 +28,10 @@
     </div>
 </nav>
 {%- endblock navbar %}
+<div class="container-fluid" >
 {% block content -%}
 {%- endblock content %}
+</div>
 
 {% block scripts %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js') }}"></script>
