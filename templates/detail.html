@@ -10,9 +10,17 @@
       </tr>
       </thead>
       <tbody>
-      {% for apk in apks %}
       <tr><td>Package Name</td><td>{{ apk.package_name }}</td></tr>
       <tr><td>MD5</td><td>{{ apk.file_md5 }}</td></tr>
+      <tr><td>Package Version Name</td><td>{{ apk.package_version_name }}</td></tr>
+      <tr>
+          <td>Devices</td>
+          <td>
+              {% for device in apk.devices %}
+              <div>{{ device }}</div>
+              {% endfor %}
+          </td>
+      </tr>
       <tr><td>Comment</td><td>{{ apk.comment }}</td></tr>
       <tr><td>APK Filepath</td><td>{{ apk.apk_filepath_absolute }}</td></tr>
       <tr><td>Platform</td><td>{{ apk.platform }}</td></tr>
@@ -40,7 +48,6 @@
           {% endif %}
         {% endfor %}
       <tr class="info"><td colspan="2"></td></tr>
-      {% endfor %}
       </tbody>
   </table>
 {% block scripts %}

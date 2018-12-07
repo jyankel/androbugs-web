@@ -1,5 +1,5 @@
 from flask_mongoengine import MongoEngine
-from mongoengine import DateTimeField, FloatField, IntField, StringField, DictField
+from mongoengine import DateTimeField, FloatField, IntField, StringField, DictField, ListField
 
 db = MongoEngine()
 
@@ -33,6 +33,7 @@ class Apk(db.Document):
     time_total = FloatField()
     analyze_status = StringField()
     comment = StringField()
+    devices = ListField()
 
     meta = {
         'collection': 'AnalyzeSuccessResults',

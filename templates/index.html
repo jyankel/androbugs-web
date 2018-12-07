@@ -8,6 +8,8 @@
               <th scope="col"><icon class="glyphicon glyphicon-trash"/></th>
               <th scope="col">Name</th>
               <th scope="col">MD5</th>
+              <th scope="col">Package Version</th>
+              <th scope="col">Devices</th>
               <th scope="col">Comment</th>
               <th scope="col">Critical Warnings</th>
           </tr>
@@ -21,33 +23,33 @@
               </a>
               <form action="{{ url_for('delete', id=apk.id) }}" method="POST" id="delete-form-{{ apk.id }}" style="display: none;"></form>
           </td>
-              <td><a href="{{ url_for('detail', name=apk.package_name)}}"><icon class="glyphicon glyphicon-info-sign"/>{{ apk.package_name }}</a></td>
+          <td><a href="{{ url_for('detail', md5=apk.file_md5) }}"><icon class="glyphicon glyphicon-info-sign"/>{{ apk.package_name }}</a></td>
           <td>{{ apk.file_md5 }}</td>
-              <td>
-                  <form method="post" enctype="multipart/form-data">
-                      <textarea name="comment" id="{{ apk.id }}" class="form-control comment" rows="3" cols="60"
-                       placeholder="Enter comment">{{ apk.comment or "" }}</textarea>
-                      <button type="submit" class="btn btn-default">Submit</button>
-                  </form>
-              </td>
-              <td>
+          <td>{{ apk.package_version_name }}</td>
+          <td>
+              {% for value in apk.devices %}
+              <div>{{ value }}</div>
+              {% endfor %}
+          </td>
+          <td>
+              <form method="post" enctype="multipart/form-data">
+                  <textarea name="comment" id="{{ apk.id }}" class="form-control comment" rows="3" cols="60"
+                   placeholder="Enter comment">{{ apk.comment or "" }}</textarea>
+                  <button type="submit" class="btn btn-default">Submit</button>
+              </form>
+          </td>
+          <td>
           {% for key, value in apk.details.items() %}
             {% if value['count'] > 0 %}
               {% if value['level'] == 'Critical' %}
-                  <div class=alert-danger><a href="{{ url_for('vector', vector_title=key)}}">{{key}}</a></div>
+                  <div class=alert-danger><a href="{{ url_for('vector', vector_title=key) }}">{{key}}</a></div>
               {% else %}
                   <div></div>
               {% endif %}
-                <!--<table class="table table-hover">-->
-                    <!--<a href="{{ url_for('vector', vector_title=key)}}">{{key}}</a>-->
-                    <!--<tr><td>{{value['summary']}}</td></tr>-->
-                    <!--<tr><td>{{value['level']}}</td></tr>-->
-                <!--</table>-->
-
               {% endif %}
           {% endfor %}
 
-              </td>
+          </td>
           </tr>
           {% endfor %}
           </tbody>
@@ -65,20 +67,12 @@
                     null,
                     null,
                     null,
+                    { "orderable": false },
+                    null,
                     { "orderable": false }
                 ]
             });
         }
-
-        /*$('#apk tbody').on('click', 'tr', function (evt) {
-            if($(evt.target).is("textarea") || $(evt.target).is("button")) {
-            // Disable click if editing the comment
-                return;
-            }
-            let data = table.row($(this)).data();
-            console.log(data);
-            document.location.href = '/detail/' + data[1];
-        } ); */
 
         // Handle comment update
         $("form").submit(function(e) {
@@ -88,6 +82,7 @@
             let url = "/update";
             $(this).append('<input type="hidden" name="id" value="' + id + '" /> ');
 
+            debugger;
             $.ajax({
                 type: 'POST',
                 url: url,

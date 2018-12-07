@@ -34,13 +34,15 @@ def delete(id):
     Apk.objects(id = id).delete()
     return index()
 
-def detail(name):
+def detail(md5):
     '''
     Displays apks with same name
     :return: the view template
     '''
-    apks = Apk.objects(package_name=name)
-    return flask.render_template('detail.html', apks=apks, package_name=name)
+    apk = Apk.objects.get(file_md5=md5)
+    print "***********************"
+    print apk.details
+    return flask.render_template('detail.html', apk=apk, package_name=apk.package_name)
 
 
 def level(name):
