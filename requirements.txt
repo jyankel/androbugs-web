@@ -1,3 +1,4 @@
 mongoengine
 Flask
 flask-mongoengine
+flask_debugtoolbar
