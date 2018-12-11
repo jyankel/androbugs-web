@@ -12,18 +12,20 @@ def index():
     return flask.render_template('index.html', apks=apks)
 
 
-def update():
+def update(id):
     '''
     Updates the comment field from the index view
     :return: Success or failure
     '''
-    comment = request.form['comment']
-    id = request.form['id']
-    Apk.objects(id = id).update(
-        set__comment = comment
-    )
 
-    return jsonify('success')
+    try:
+        comment = request.form['comment']
+        Apk.objects(id = id).update(
+            set__comment = comment
+        )
+        return jsonify(message="Update successful.")
+    except Exception as e:
+        return jsonify(message=e.message), 500
 
 
 def delete(id):
@@ -31,15 +33,19 @@ def delete(id):
     Delete an existing apk record
     :return: Success or failure
     '''
-    Apk.objects(id = id).delete()
-    return index()
+    try:
+        Apk.objects(id = id).delete()
+        return jsonify(message="Delete successful.")
+    except Exception as e:
+        return jsonify(message=e.message), 500
 
-def detail(md5):
+    
+def detail(id):
     '''
     Displays apks with same name
     :return: the view template
     '''
-    apk = Apk.objects.get(file_md5=md5)
+    apk = Apk.objects.get(id=id)
     print "***********************"
     print apk.details
     return flask.render_template('detail.html', apk=apk, package_name=apk.package_name)

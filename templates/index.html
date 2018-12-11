@@ -2,58 +2,57 @@
 {% block title %}AndroBugs Web{% endblock %}
 
 {% block content %}
-      <table id="apk" class="table table-bordered table-hover table-striped">
-          <thead class="thead-dark">
-          <tr>
-              <th scope="col"><icon class="glyphicon glyphicon-trash"/></th>
-              <th scope="col">Name</th>
-              <th scope="col">MD5</th>
-              <th scope="col">Package Version</th>
-              <th scope="col">Devices</th>
-              <th scope="col">Comment</th>
-              <th scope="col">Critical Warnings</th>
-          </tr>
-          </thead>
-          <tbody>
-          {% for apk in apks %}
-          <tr>
-          <td>
-              <a href="#" onclick="event.preventDefault(); document.getElementById('delete-form-{{ apk.id }}').submit();">
-                  <i class="glyphicon glyphicon-trash"></i>
-              </a>
-              <form action="{{ url_for('delete', id=apk.id) }}" method="POST" id="delete-form-{{ apk.id }}" style="display: none;"></form>
-          </td>
-          <td><a href="{{ url_for('detail', md5=apk.file_md5) }}"><icon class="glyphicon glyphicon-info-sign"/>{{ apk.package_name }}</a></td>
-          <td>{{ apk.file_md5 }}</td>
-          <td>{{ apk.package_version_name }}</td>
-          <td>
-              {% for value in apk.devices %}
-              <div>{{ value }}</div>
-              {% endfor %}
-          </td>
-          <td>
-              <form method="post" enctype="multipart/form-data">
-                  <textarea name="comment" id="{{ apk.id }}" class="form-control comment" rows="3" cols="60"
-                   placeholder="Enter comment">{{ apk.comment or "" }}</textarea>
-                  <button type="submit" class="btn btn-default">Submit</button>
-              </form>
-          </td>
-          <td>
-          {% for key, value in apk.details.items() %}
-            {% if value['count'] > 0 %}
-              {% if value['level'] == 'Critical' %}
-                  <div class=alert-danger><a href="{{ url_for('vector', vector_title=key) }}">{{key}}</a></div>
-              {% else %}
-                  <div></div>
-              {% endif %}
-              {% endif %}
+  <table id="apk" class="table table-bordered table-hover table-striped">
+      <thead class="thead-dark">
+      <tr>
+          <th scope="col"><icon class="glyphicon glyphicon-trash"/></th>
+          <th scope="col">Name</th>
+          <th scope="col">MD5</th>
+          <th scope="col">Package Version</th>
+          <th scope="col">Devices</th>
+          <th scope="col">Comment</th>
+          <th scope="col">Critical Warnings</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for apk in apks %}
+      <tr>
+      <td>
+          <i class="glyphicon glyphicon-trash" onclick="event.preventDefault(); deleteRow(event);" id="delete-{{ apk.id }}"></i>
+      </td>
+      <td><a href="{{ url_for('detail', id=apk.id) }}"><icon class="glyphicon glyphicon-info-sign"/>{{ apk.package_name }}</a></td>
+      <td>{{ apk.file_md5 }}</td>
+      <td>{{ apk.package_version_name }}</td>
+      <td>
+          {% for value in apk.devices %}
+          <div>{{ value }}</div>
           {% endfor %}
+      </td>
+      <td>
+          <form method="post" enctype="multipart/form-data" id="comment-form-{{ apk.id }}">
+              <textarea name="comment" id="{{ apk.id }}" class="form-control comment" rows="3" cols="60"
+               placeholder="Enter comment">{{ apk.comment or "" }}</textarea>
+              <button onclick="event.preventDefault(); updateComment(event, document.getElementById('comment-form-{{ apk.id }}'))" class="btn btn-default">Update</button>
+              <div id="error_message-{{ apk.id }}" class="alert-danger"></div>
+              <div id="success_message-{{ apk.id }}" class="alert-success"></div>
+          </form>
+      </td>
+      <td>
+      {% for key, value in apk.details.items() %}
+        {% if value['count'] > 0 %}
+          {% if value['level'] == 'Critical' %}
+              <div class=alert-danger><a href="{{ url_for('vector', vector_title=key) }}">{{key}}</a></div>
+          {% else %}
+              <div></div>
+          {% endif %}
+          {% endif %}
+      {% endfor %}
 
-          </td>
-          </tr>
-          {% endfor %}
-          </tbody>
-      </table>
+      </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+  </table>
 {% block scripts %}
 {{ super() }}
 <script>
@@ -62,6 +61,7 @@
         let table;
         if($('[id^=apk_wrapper]').length == 0) {
             table = $('#apk').DataTable({
+                "select": true,
                 "columns": [
                     { "orderable": false },
                     null,
@@ -70,37 +70,63 @@
                     { "orderable": false },
                     null,
                     { "orderable": false }
-                ]
+                ],
+                "retrieve": true
             });
         }
-
-        // Handle comment update
-        $("form").submit(function(e) {
-            e.preventDefault();
-            let form = $(this);
-            let id = e.target[0].getAttribute('id');
-            let url = "/update";
-            $(this).append('<input type="hidden" name="id" value="' + id + '" /> ');
-
-            debugger;
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: form.serialize(),
-                success: function(data)
-                {
-                    console.log("Success" + data);
-                },
-                error: function(data)
-                {
-                    console.log(data);
-                }
-            });
-
-
-            return false;
-        });
     });
+
+    function deleteRow(event) {
+        debugger;
+        let id = event.currentTarget.id.split('-')[1];
+        let url = "/delete/" + id;
+        $.ajax({
+            type: 'POST',
+            url: url,
+            success: function(data)
+            {
+                console.log(data.message);
+                let selectedRow = $("#apk tr.selected");
+                selectedRow.remove();
+            },
+            error: function(data)
+            {
+                console.log(data.responseJSON.message);
+            }
+        });
+        return false;
+    }
+
+    function updateComment(event, form) {
+        let id = form.getAttribute('id').split('-')[2];
+        let url = "/update/" + id;
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: $(form).serialize(),
+            success: function(data)
+            {
+                let message = "#success_message-" + id;
+                console.log("Success");
+                debugger;
+                $(message).fadeIn().html(data.message);
+                setTimeout(function() {
+                    $(message).fadeOut("slow");
+                }, 2000 );
+            },
+            error: function(data)
+            {
+                debugger;
+                let message = "#error_message-" + id;
+                console.log(data.message);
+                $(message).fadeIn().html(data.responseJSON.message);
+                setTimeout(function() {
+                    $(message).fadeOut("slow");
+                }, 2000 );
+            }
+        });
+        return false;
+    }
 </script>
 {% endblock %}
 {% endblock %}

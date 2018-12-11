@@ -24,9 +24,9 @@ DEBUG_TOOLBAR_ENABLED = True
 #toolbar = DebugToolbarExtension(app)
 from myfilters import *
 app.add_url_rule('/', view_func=index)
-app.add_url_rule('/detail/<md5>', view_func=detail)
+app.add_url_rule('/detail/<id>', view_func=detail)
 app.add_url_rule('/vector/<vector_title>', view_func=vector)
-app.add_url_rule('/update', view_func=update, methods=['POST'])
+app.add_url_rule('/update/<id>', view_func=update, methods=['POST'])
 app.add_url_rule('/delete/<id>', view_func=delete, methods=['POST'])
 
 
