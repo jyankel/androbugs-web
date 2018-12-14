@@ -1,7 +1,31 @@
 {% extends "base.html" %}
 {% block title %}AndroBugs Web{% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='androbugs.css') }}">
+{% endblock %}
 {% block content %}
+
+<form action="{{ url_for('upload') }}" method="post" id="file-upload" enctype="multipart/form-data" class="file-upload">
+    <dl>
+        <dt>APK File:
+        <dd><input type="file" class="well" name="file" id="file-input" accept=".apk">
+        <dt><input type="submit" class="btn btn-default" value="Process APK File">
+    </dl>
+</form>
+<div id="fountainG" style="visibility: hidden;">
+    <div id="fountainG_1" class="fountainG"></div>
+    <div id="fountainG_2" class="fountainG"></div>
+    <div id="fountainG_3" class="fountainG"></div>
+    <div id="fountainG_4" class="fountainG"></div>
+    <div id="fountainG_5" class="fountainG"></div>
+    <div id="fountainG_6" class="fountainG"></div>
+    <div id="fountainG_7" class="fountainG"></div>
+    <div id="fountainG_8" class="fountainG"></div>
+</div>
+<div class="result"></div>
+
   <table id="apk" class="table table-bordered table-hover table-striped">
       <thead class="thead-dark">
       <tr>
@@ -74,6 +98,49 @@
                 "retrieve": true
             });
         }
+
+        $('.file-upload').on('submit', function(e){
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            if($("#file-input").get(0).files.length === 0) {
+                console.log("No files selected.");
+                return false;
+            }
+
+            let loading = $('#fountainG');
+            loading.css('visibility', 'visible');
+            let results = $('.result');
+            results.html('');
+
+            let form = $(this);
+            url = form.attr('action');
+
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function(data) {
+                    loading.css('visibility', 'hidden');
+                    results.html(data);
+                    // clear file upload
+                    $('.file-upload')[0].reset();
+                },
+                error: function (data) {
+                    results.html(data);
+                    // clear file upload
+                    $('.file-upload')[0].reset();
+                }
+            });
+            
+            return false;
+        });
+
     });
 
     function deleteRow(event) {

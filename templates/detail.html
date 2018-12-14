@@ -51,13 +51,5 @@
       </tbody>
   </table>
 {% block scripts %}
-{{ super() }}
-<script>
-    jQuery(document).ready(function($) {
-        $('.click').click(function() {
-            window.location = $(this).data("href");
-        });
-    });
-</script>
 {% endblock %}
 {% endblock %}
